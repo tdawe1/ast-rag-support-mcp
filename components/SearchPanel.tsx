@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { geminiService } from '../services/geminiService';
+import { intelligenceService } from '../services/intelligenceService';
 import { ExpandedQuery, CodeChunk, NodeType, UserRole, Repository, MatchType } from '../types';
 
 interface SearchPanelProps {
@@ -14,7 +14,6 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ userRole, repositories }) => 
   const [isReranking, setIsReranking] = useState(false);
   const [expansion, setExpansion] = useState<ExpandedQuery | null>(null);
   const [results, setResults] = useState<CodeChunk[]>([]);
-  const [hybridSearch, setHybridSearch] = useState(true);
   const [useReranker, setUseReranker] = useState(true);
   const [selectedRepo, setSelectedRepo] = useState<string>('all');
   const [viewingChunk, setViewingChunk] = useState<CodeChunk | null>(null);
@@ -27,8 +26,12 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ userRole, repositories }) => 
     setExpansion(null);
     setResults([]);
 
-    const expanded = await geminiService.expandQuery(query);
-    setExpansion(expanded);
+    try {
+      const expanded = await intelligenceService.expandQuery(query);
+      setExpansion(expanded);
+    } catch (err) {
+      console.error("Expansion failed", err);
+    }
 
     setTimeout(() => {
       const initialResults: CodeChunk[] = [
@@ -46,30 +49,28 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ userRole, repositories }) => 
           match_type: 'dense'
         },
         {
-          id: 'v2',
-          content: `class AuthProvider {\n  constructor(config: AuthConfig) {\n    this.strategy = new OAuth2Strategy(config);\n  }\n\n  async authenticate(req: Request) {\n    return this.strategy.authenticate(req);\n  }\n}`,
-          file_path: 'services/auth-service/provider.ts',
-          start_line: 12,
-          end_line: 22,
-          node_type: NodeType.CLASS,
-          repo_id: 'auth-microservice',
-          score: 0.912,
-          originalScore: 0.912,
+          id: 'doc1',
+          content: `## Authentication Flow\nThe system uses JWT tokens for identity verification. Tokens are expected in the 'Authorization' header using the 'Bearer' scheme. After extraction, tokens are validated against the primary auth provider.`,
+          file_path: 'docs/architecture.md',
+          section_title: 'Authentication Flow',
+          node_type: NodeType.SECTION,
+          repo_id: 'main-app',
+          score: 0.945,
+          originalScore: 0.945,
           access_group: 'public',
           match_type: 'dense'
         },
         {
-          id: 'k1',
-          content: `// Keywords match: "auth", "token", "jwt"\nexport const AUTH_HEADER = 'Authorization';\nexport const TOKEN_PREFIX = 'Bearer ';`,
-          file_path: 'constants/security.ts',
-          start_line: 5,
-          end_line: 8,
-          node_type: NodeType.MODULE,
-          repo_id: 'main-app',
-          score: 0.740,
-          originalScore: 0.740,
-          access_group: 'public',
-          match_type: 'bm25'
+          id: 'pdf1',
+          content: `Security Compliance Requirement 4.2: All external API calls must be logged with a unique trace ID. The trace ID must be propagated from the incoming request headers to downstream services.`,
+          file_path: 'compliance/security_specs_2024.pdf',
+          page_number: 14,
+          node_type: NodeType.PAGE,
+          repo_id: 'auth-microservice',
+          score: 0.812,
+          originalScore: 0.812,
+          access_group: 'internal',
+          match_type: 'dense'
         }
       ];
 
@@ -80,8 +81,8 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ userRole, repositories }) => 
         setTimeout(() => {
           const reranked = initialResults.map(res => {
             let newScore = res.score || 0;
-            if (res.id === 'v1') newScore = 0.985;
-            if (res.id === 'v2') newScore = 0.824;
+            if (res.id === 'doc1') newScore = 0.992;
+            if (res.id === 'v1') newScore = 0.965;
             return { ...res, score: newScore, match_type: 'reranked' as MatchType };
           }).sort((a, b) => (b.score || 0) - (a.score || 0));
           
@@ -98,8 +99,8 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ userRole, repositories }) => 
     <div className="space-y-6 max-w-5xl mx-auto">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Semantic Search <span className="text-xs bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded-full uppercase ml-2 tracking-widest font-bold">Phase 5</span></h2>
-          <p className="text-slate-400 text-sm">Cross-encoder re-ranking & query expansion enabled.</p>
+          <h2 className="text-2xl font-bold">Semantic Search <span className="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full uppercase ml-2 tracking-widest font-bold">Multimodal</span></h2>
+          <p className="text-slate-400 text-sm">Unified retrieval for Code (AST), PDFs, and Markdown documentation.</p>
         </div>
         <div className="flex items-center space-x-3 bg-slate-900/50 p-1.5 rounded-lg border border-slate-800">
            <button 
@@ -126,7 +127,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ userRole, repositories }) => 
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Query code logic, e.g. 'How is user identity verified?'"
+          placeholder="Ask about logic or documentation, e.g. 'How are JWTs verified?'"
           className="w-full bg-slate-900 border border-slate-800 rounded-2xl px-6 py-4 pr-32 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all shadow-lg text-lg"
         />
         <button
@@ -138,14 +139,13 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ userRole, repositories }) => 
         </button>
       </form>
 
-      {isReranking && (
-        <div className="bg-purple-500/5 border border-purple-500/10 rounded-xl p-4 flex items-center justify-between animate-pulse">
-           <div className="flex items-center space-x-3">
-              <span className="text-xs font-bold text-purple-400 uppercase tracking-widest">Cross-Encoder Processing Top 50 hits...</span>
+      {expansion && (
+        <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 animate-in fade-in slide-in-from-top-2">
+           <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Global Optimizer</span>
+              <span className="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded font-mono uppercase">{expansion.intent}</span>
            </div>
-           <div className="h-1 w-32 bg-slate-800 rounded-full overflow-hidden">
-              <div className="h-full bg-purple-500 w-1/2 animate-[shimmer_2s_infinite]"></div>
-           </div>
+           <p className="text-sm text-slate-300 leading-relaxed italic">"{expansion.expanded}"</p>
         </div>
       )}
 
@@ -156,38 +156,81 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ userRole, repositories }) => 
               <div className="bg-slate-800/50 px-4 py-2 flex justify-between items-center text-xs">
                 <div className="flex items-center space-x-3">
                   <span className={`px-2 py-0.5 border rounded text-[9px] font-bold uppercase tracking-widest ${
-                    res.match_type === 'reranked' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                    res.file_path.endsWith('.pdf') ? 'bg-red-500/10 text-red-400 border-red-500/20' : 
+                    res.file_path.endsWith('.md') ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                    'bg-blue-500/10 text-blue-400 border-blue-500/20'
                   }`}>
-                    {res.match_type}
+                    {res.node_type}
                   </span>
                   <span className="mono font-medium text-slate-300 truncate max-w-[200px]">{res.file_path}</span>
                 </div>
                 <div className="flex items-center space-x-4">
-                  {res.match_type === 'reranked' && (
-                    <span className="text-[9px] text-slate-500 italic">
-                      Boost: +{(((res.score || 0) - (res.originalScore || 0)) * 100).toFixed(1)}%
-                    </span>
-                  )}
+                  <span className="text-[9px] text-slate-500 font-mono">
+                    {res.page_number ? `PAGE ${res.page_number}` : res.start_line ? `L${res.start_line}` : 'DOC'}
+                  </span>
                   <span className={`font-mono font-bold ${res.score && res.score > 0.9 ? 'text-emerald-400' : 'text-blue-400'}`}>
                     {(res.score! * 100).toFixed(1)}%
                   </span>
                 </div>
               </div>
               <div className="p-4 bg-slate-950/30">
-                <pre className="mono text-xs leading-relaxed text-slate-300 overflow-x-auto whitespace-pre scrollbar-hide">
+                <div className={`text-sm leading-relaxed text-slate-300 ${!res.file_path.endsWith('.ts') ? 'font-sans' : 'mono text-xs'}`}>
                   {res.content}
-                </pre>
+                </div>
               </div>
               <div className="px-4 py-2 bg-slate-900/50 border-t border-slate-800/50 flex justify-end">
                 <button 
                   onClick={() => setViewingChunk(res)}
                   className="text-[10px] font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-colors"
                 >
-                  Inspect Node
+                  Inspect Meta
                 </button>
               </div>
             </div>
           ))}
+        </div>
+      )}
+      
+      {viewingChunk && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+           <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl max-h-[80vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95">
+              <div className="px-6 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+                 <div className="flex items-center space-x-3">
+                    <span className="text-xs font-bold uppercase tracking-widest text-blue-400">Node Inspector</span>
+                    <span className="text-slate-500">/</span>
+                    <span className="text-xs font-mono text-slate-300">{viewingChunk.file_path}</span>
+                 </div>
+                 <button onClick={() => setViewingChunk(null)} className="text-slate-500 hover:text-white transition-colors">Close</button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                       <p className="text-[10px] font-bold uppercase text-slate-500 mb-1">Source Type</p>
+                       <p className="text-sm font-bold text-blue-400 uppercase tracking-widest">
+                          {viewingChunk.file_path.split('.').pop()}
+                       </p>
+                    </div>
+                    <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                       <p className="text-[10px] font-bold uppercase text-slate-500 mb-1">Location Info</p>
+                       <p className="text-sm font-bold text-slate-300 mono">
+                          {viewingChunk.page_number ? `Page ${viewingChunk.page_number}` : `Lines ${viewingChunk.start_line}-${viewingChunk.end_line}`}
+                       </p>
+                    </div>
+                    <div className="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                       <p className="text-[10px] font-bold uppercase text-slate-500 mb-1">Mime Group</p>
+                       <p className="text-sm font-bold text-emerald-400 uppercase tracking-widest">{viewingChunk.access_group}</p>
+                    </div>
+                 </div>
+                 <div className="space-y-2">
+                    <p className="text-[10px] font-bold uppercase text-slate-500">Extracted Content</p>
+                    <div className="bg-slate-950 border border-slate-800 rounded-xl p-5 overflow-x-auto">
+                       <pre className={`text-slate-300 leading-relaxed whitespace-pre-wrap ${viewingChunk.file_path.endsWith('.ts') ? 'mono text-xs' : 'text-sm'}`}>
+                          {viewingChunk.content}
+                       </pre>
+                    </div>
+                 </div>
+              </div>
+           </div>
         </div>
       )}
     </div>

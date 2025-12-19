@@ -6,19 +6,33 @@ export enum ViewType {
   RESOURCES = 'RESOURCES',
   PROMPTS = 'PROMPTS',
   SECURITY = 'SECURITY',
-  LOGS = 'LOGS'
+  LOGS = 'LOGS',
+  SETTINGS = 'SETTINGS'
 }
 
 export enum NodeType {
+  // Code Nodes
   FUNCTION = 'function_definition',
   CLASS = 'class_definition',
   METHOD = 'method_definition',
-  MODULE = 'module'
+  MODULE = 'module',
+  // Document Nodes
+  PARAGRAPH = 'paragraph',
+  SECTION = 'section',
+  PAGE = 'pdf_page',
+  LIST_ITEM = 'list_item'
 }
 
 export type AccessGroup = 'public' | 'internal' | 'restricted';
 export type MatchType = 'dense' | 'bm25' | 'hybrid' | 'reranked';
 export type TransportType = 'STDIO' | 'SSE' | 'HTTP';
+export type ModelProvider = 'GEMINI' | 'LOCAL';
+
+export interface ModelConfig {
+  provider: ModelProvider;
+  localEndpoint: string;
+  localModel: string;
+}
 
 export interface PromptArgument {
   name: string;
@@ -46,8 +60,10 @@ export interface CodeChunk {
   id: string;
   content: string;
   file_path: string;
-  start_line: number;
-  end_line: number;
+  start_line?: number;
+  end_line?: number;
+  page_number?: number;
+  section_title?: string;
   node_type: NodeType;
   repo_id: string;
   score?: number;
@@ -65,6 +81,7 @@ export interface Repository {
   chunkCount: number;
   status: 'active' | 'indexing' | 'error';
   progress?: number;
+  ignorePatterns?: string[];
 }
 
 export interface AccessLogEntry {
@@ -80,7 +97,7 @@ export interface AccessLogEntry {
 export interface IndexingEvent {
   id: string;
   timestamp: string;
-  type: 'CREATE' | 'MODIFY' | 'DELETE' | 'INFO' | 'AST_PARSE' | 'SECURITY';
+  type: 'CREATE' | 'MODIFY' | 'DELETE' | 'INFO' | 'AST_PARSE' | 'DOC_EXTRACT' | 'SECURITY' | 'SKIP';
   file: string;
   message: string;
   details?: string;

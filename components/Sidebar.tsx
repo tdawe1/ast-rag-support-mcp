@@ -18,6 +18,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, userRole, setUs
     { id: ViewType.PROMPTS, label: 'MCP Prompts' },
     { id: ViewType.SECURITY, label: 'Security & Auth' },
     { id: ViewType.LOGS, label: 'System Logs' },
+    { id: ViewType.SETTINGS, label: 'Model Settings' },
   ];
 
   return (

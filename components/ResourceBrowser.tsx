@@ -12,6 +12,13 @@ const ResourceBrowser: React.FC = () => {
       mimeType: 'text/x-typescript'
     },
     {
+      id: 'rt4',
+      name: 'PDF Document Assets',
+      uriTemplate: 'doc://{repository}/{path}#page={page}',
+      description: 'Page-level semantic retrieval for uploaded documentation.',
+      mimeType: 'application/pdf'
+    },
+    {
       id: 'rt2',
       name: 'Functional Node AST',
       uriTemplate: 'ast://{repository}/{path}/{node_id}',
@@ -80,7 +87,7 @@ const ResourceBrowser: React.FC = () => {
                      </div>
                    ))}
                 </div>
-                <span className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">3 Extraction Hooks Active</span>
+                <span className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">Global Provider Hook</span>
               </div>
             </div>
           ))}
@@ -91,7 +98,7 @@ const ResourceBrowser: React.FC = () => {
       ) : (
         <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
            <div className="p-12 flex flex-col items-center justify-center text-slate-600 space-y-4">
-              <p className="text-sm italic">Direct URI indexing for Phase 5 is currently evaluating file tree structure...</p>
+              <p className="text-sm italic">Direct URI indexing for Multimodal chunks is processing file tree...</p>
               <button className="bg-blue-600/10 text-blue-400 border border-blue-500/20 px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest">
                 Scan Index Now
               </button>

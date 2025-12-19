@@ -8,11 +8,23 @@ import IndexingLog from './components/IndexingLog';
 import SecurityPanel from './components/SecurityPanel';
 import PromptManager from './components/PromptManager';
 import ResourceBrowser from './components/ResourceBrowser';
-import { ViewType, Repository, UserRole } from './types';
+import SettingsPanel from './components/SettingsPanel';
+import { ViewType, Repository, UserRole, ModelConfig } from './types';
+import { intelligenceService } from './services/intelligenceService';
 
 const App: React.FC = () => {
   const [currentView, setView] = useState<ViewType>(ViewType.DASHBOARD);
   const [userRole, setUserRole] = useState<UserRole>('Admin');
+  const [modelConfig, setModelConfig] = useState<ModelConfig>({
+    provider: 'GEMINI',
+    localEndpoint: 'http://localhost:11434/v1',
+    localModel: 'llama3'
+  });
+
+  useEffect(() => {
+    intelligenceService.updateConfig(modelConfig);
+  }, [modelConfig]);
+
   const [repositories, setRepositories] = useState<Repository[]>([
     {
       id: 'main-app',
@@ -85,6 +97,8 @@ const App: React.FC = () => {
         return <PromptManager />;
       case ViewType.SECURITY:
         return <SecurityPanel userRole={userRole} />;
+      case ViewType.SETTINGS:
+        return <SettingsPanel config={modelConfig} onChange={setModelConfig} />;
       case ViewType.LOGS:
         return (
           <div className="h-[calc(100vh-120px)] flex flex-col">
@@ -120,14 +134,14 @@ const App: React.FC = () => {
            <div className="text-xs text-slate-500 flex items-center space-x-4">
               <span className="flex items-center"><span className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></span>LanceDB V0.3.1</span>
               <span className="flex items-center"><span className="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-2"></span>Watcher: Active</span>
-              <span className="flex items-center text-slate-400 font-mono">Role: {userRole}</span>
+              <span className="flex items-center text-slate-400 font-mono">Model: {modelConfig.provider === 'GEMINI' ? 'Gemini 3 Flash' : modelConfig.localModel}</span>
            </div>
            <div className="flex space-x-2">
               <button 
-                onClick={() => setView(ViewType.SECURITY)}
+                onClick={() => setView(ViewType.SETTINGS)}
                 className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-bold uppercase tracking-wider rounded-lg transition-all"
               >
-                RBAC Settings
+                Config Model
               </button>
               <button 
                 onClick={() => setView(ViewType.SEARCH)}
