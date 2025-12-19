@@ -5,7 +5,7 @@ rag-support is a local-first Model Context Protocol (MCP) server providing seman
 ## System Architecture
 
 - **Runtime**: Python 3.11+
-- **Transport Layer**: Supports stdio and SSE/HTTP interfaces.
+- **Transport Layer**: Supports stdio and SSE/HTTP interfaces (Phase 4).
 - **Vector Engine**: LanceDB (Parquet-based, embedded storage).
 - **Embedding Model**: `jina-embeddings-v2-base-code` (8192 token context window).
 - **Parsing Engine**: Tree-sitter for language-agnostic AST functional node generation.
@@ -20,6 +20,10 @@ rag-support is a local-first Model Context Protocol (MCP) server providing seman
 ### Retrieval Logic
 - **Query Expansion**: Utilizes Gemini 3 Flash to pre-process natural language queries into technical search vectors and hypothetical code signatures.
 - **Hybrid Retrieval**: Combines dense vector search with BM25 keyword matching for exact identifier resolution.
+
+### Security & RBAC (Phase 4)
+- **Claim Validation**: Validates JWT claims for scoped tool access (`search_codebase`, `read_resource`, `reindex`).
+- **Access Groups**: Metadata-level filtering ensures users can only retrieve code chunks within their permitted visibility (`public`, `internal`, `restricted`).
 
 ## MCP Interface Specification
 
@@ -57,10 +61,10 @@ Vector metadata follows a strict schema for forward compatibility with RBAC:
 
 ## Implementation Roadmap
 
-- **Milestone 1: Core Logic**: Implementation of Tree-sitter integration and LanceDB storage schema.
-- **Milestone 2: MCP Binding**: Implementation of stdio server and retrieval tools.
-- **Milestone 3: Synchronization**: Filesystem observer integration and query expansion optimization.
-- **Milestone 4: Security (Phase 2)**: Implementation of access_group filtering and token-based claims validation.
+- [x] **Milestone 1: Core Logic**: Implementation of Tree-sitter integration and LanceDB storage schema.
+- [x] **Milestone 2: MCP Binding**: Implementation of stdio server and retrieval tools.
+- [x] **Milestone 3: Synchronization**: Filesystem observer integration and query expansion optimization.
+- [x] **Milestone 4: Security & Networked Transport**: Implementation of access_group filtering, SSE transport, and audit logging.
 
 ## Environment Requirements
 

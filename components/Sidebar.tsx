@@ -14,6 +14,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, userRole, setUs
     { id: ViewType.DASHBOARD, label: 'Dashboard', icon: '📊' },
     { id: ViewType.SEARCH, label: 'Semantic Search', icon: '🔍' },
     { id: ViewType.REPOSITORIES, label: 'Repositories', icon: '📁' },
+    { id: ViewType.SECURITY, label: 'Security & Auth', icon: '🛡️' },
     { id: ViewType.LOGS, label: 'System Logs', icon: '📜' },
   ];
 

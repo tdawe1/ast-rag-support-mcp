@@ -5,6 +5,7 @@ import Dashboard from './components/Dashboard';
 import SearchPanel from './components/SearchPanel';
 import RepositoryList from './components/RepositoryList';
 import IndexingLog from './components/IndexingLog';
+import SecurityPanel from './components/SecurityPanel';
 import { ViewType, Repository, UserRole } from './types';
 
 const App: React.FC = () => {
@@ -40,16 +41,26 @@ const App: React.FC = () => {
   };
 
   const reindexRepository = (id: string) => {
-    setRepositories(repositories.map(r => 
-      r.id === id ? { ...r, status: 'indexing' as const } : r
+    setRepositories(prev => prev.map(r => 
+      r.id === id ? { ...r, status: 'indexing', progress: 0 } : r
     ));
     
-    // Simulate reindexing completion
-    setTimeout(() => {
-      setRepositories(prev => prev.map(r => 
-        r.id === id ? { ...r, status: 'active' as const, lastIndexed: 'Just now' } : r
-      ));
-    }, 3000);
+    // Simulate reindexing progress
+    let currentProgress = 0;
+    const interval = setInterval(() => {
+      currentProgress += Math.floor(Math.random() * 15) + 5;
+      if (currentProgress >= 100) {
+        currentProgress = 100;
+        clearInterval(interval);
+        setRepositories(prev => prev.map(r => 
+          r.id === id ? { ...r, status: 'active', lastIndexed: 'Just now', progress: undefined } : r
+        ));
+      } else {
+        setRepositories(prev => prev.map(r => 
+          r.id === id ? { ...r, progress: currentProgress } : r
+        ));
+      }
+    }, 400);
   };
 
   const renderView = () => {
@@ -67,6 +78,8 @@ const App: React.FC = () => {
             onReindex={reindexRepository} 
           />
         );
+      case ViewType.SECURITY:
+        return <SecurityPanel userRole={userRole} />;
       case ViewType.LOGS:
         return (
           <div className="h-[calc(100vh-120px)] flex flex-col">
@@ -107,10 +120,10 @@ const App: React.FC = () => {
            </div>
            <div className="flex space-x-2">
               <button 
-                onClick={() => setView(ViewType.LOGS)}
+                onClick={() => setView(ViewType.SECURITY)}
                 className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-bold uppercase tracking-wider rounded-lg transition-all"
               >
-                View Logs
+                RBAC Settings
               </button>
               <button 
                 onClick={() => setView(ViewType.SEARCH)}

@@ -3,6 +3,7 @@ export enum ViewType {
   DASHBOARD = 'DASHBOARD',
   SEARCH = 'SEARCH',
   REPOSITORIES = 'REPOSITORIES',
+  SECURITY = 'SECURITY',
   LOGS = 'LOGS'
 }
 
@@ -15,6 +16,7 @@ export enum NodeType {
 
 export type AccessGroup = 'public' | 'internal' | 'restricted';
 export type MatchType = 'dense' | 'bm25' | 'hybrid';
+export type TransportType = 'STDIO' | 'SSE' | 'HTTP';
 
 export interface CodeChunk {
   id: string;
@@ -37,12 +39,23 @@ export interface Repository {
   fileCount: number;
   chunkCount: number;
   status: 'active' | 'indexing' | 'error';
+  progress?: number;
+}
+
+export interface AccessLogEntry {
+  id: string;
+  timestamp: string;
+  principal: string;
+  action: string;
+  resource: string;
+  status: 'GRANTED' | 'DENIED';
+  reason?: string;
 }
 
 export interface IndexingEvent {
   id: string;
   timestamp: string;
-  type: 'CREATE' | 'MODIFY' | 'DELETE' | 'INFO' | 'AST_PARSE';
+  type: 'CREATE' | 'MODIFY' | 'DELETE' | 'INFO' | 'AST_PARSE' | 'SECURITY';
   file: string;
   message: string;
   details?: string;

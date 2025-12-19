@@ -25,13 +25,11 @@ const RepositoryList: React.FC<RepositoryListProps> = ({ repos, onAdd, onDelete,
       lastIndexed: 'Just now',
       fileCount: 0,
       chunkCount: 0,
-      status: 'indexing'
+      status: 'indexing',
+      progress: 0
     });
     
-    // Auto-complete indexing after simulation
-    setTimeout(() => {
-        onReindex(id);
-    }, 2000);
+    onReindex(id);
 
     setNewRepo({ name: '', path: '', id: '' });
     setShowAddModal(false);
@@ -46,7 +44,7 @@ const RepositoryList: React.FC<RepositoryListProps> = ({ repos, onAdd, onDelete,
         </div>
         <button 
           onClick={() => setShowAddModal(true)}
-          className="bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2 rounded-lg font-semibold transition-colors"
+          className="bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2 rounded-lg font-semibold transition-colors shadow-lg shadow-blue-500/10"
         >
            + Add Local Target
         </button>
@@ -54,8 +52,16 @@ const RepositoryList: React.FC<RepositoryListProps> = ({ repos, onAdd, onDelete,
 
       <div className="grid grid-cols-1 gap-4">
         {repos.map((repo) => (
-          <div key={repo.id} className="bg-slate-900 border border-slate-800 p-6 rounded-xl hover:bg-slate-800/50 transition-colors group">
-            <div className="flex justify-between items-start mb-4">
+          <div key={repo.id} className="bg-slate-900 border border-slate-800 p-6 rounded-xl hover:bg-slate-800/50 transition-colors group relative overflow-hidden">
+            {/* Indexing Progress Bar Background Overlay */}
+            {repo.status === 'indexing' && (
+              <div 
+                className="absolute bottom-0 left-0 h-1 bg-blue-500 transition-all duration-300 ease-out z-10" 
+                style={{ width: `${repo.progress || 0}%` }}
+              ></div>
+            )}
+
+            <div className="flex justify-between items-start mb-4 relative z-0">
               <div className="flex items-center space-x-3">
                 <div className={`w-3 h-3 rounded-full ${
                   repo.status === 'active' ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 
@@ -66,9 +72,11 @@ const RepositoryList: React.FC<RepositoryListProps> = ({ repos, onAdd, onDelete,
                   ID: {repo.id}
                 </span>
                 {repo.status === 'indexing' && (
-                  <span className="text-[10px] text-yellow-500 font-bold uppercase animate-pulse">
-                    Indexing...
-                  </span>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-[10px] text-yellow-500 font-bold uppercase animate-pulse">
+                      Indexing ({repo.progress}%)
+                    </span>
+                  </div>
                 )}
               </div>
               <div className="flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -76,19 +84,21 @@ const RepositoryList: React.FC<RepositoryListProps> = ({ repos, onAdd, onDelete,
                   onClick={() => onReindex(repo.id)}
                   disabled={repo.status === 'indexing'}
                   className="p-2 text-slate-400 hover:text-white bg-slate-800 rounded-lg hover:bg-slate-700 transition-all disabled:opacity-50"
+                  title="Force Reindex"
                  >
-                    🔄 Reindex
+                    🔄
                  </button>
                  <button 
                   onClick={() => onDelete(repo.id)}
                   className="p-2 text-slate-400 hover:text-red-400 bg-slate-800 rounded-lg hover:bg-red-500/10 transition-all"
+                  title="Remove Repository"
                  >
                     🗑️
                  </button>
               </div>
             </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 relative z-0">
               <div>
                 <p className="text-xs text-slate-500 uppercase tracking-widest font-bold">Path</p>
                 <p className="text-sm text-slate-300 mono mt-1 truncate" title={repo.path}>{repo.path}</p>
@@ -109,6 +119,21 @@ const RepositoryList: React.FC<RepositoryListProps> = ({ repos, onAdd, onDelete,
                 </p>
               </div>
             </div>
+
+            {repo.status === 'indexing' && (
+               <div className="mt-6 flex flex-col space-y-2 relative z-0">
+                  <div className="flex justify-between text-[10px] font-bold uppercase text-slate-500 tracking-wider">
+                     <span>AST Extraction Progress</span>
+                     <span>{repo.progress}%</span>
+                  </div>
+                  <div className="h-2 w-full bg-slate-950 rounded-full overflow-hidden border border-slate-800">
+                    <div 
+                      className="h-full bg-gradient-to-r from-blue-600 to-blue-400 transition-all duration-300 ease-out rounded-full shadow-[0_0_8px_rgba(59,130,246,0.3)]"
+                      style={{ width: `${repo.progress}%` }}
+                    ></div>
+                  </div>
+               </div>
+            )}
 
             {repo.status === 'error' && (
               <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center text-xs text-red-400">
@@ -156,11 +181,11 @@ const RepositoryList: React.FC<RepositoryListProps> = ({ repos, onAdd, onDelete,
                     <button 
                       type="button"
                       onClick={() => setShowAddModal(false)}
-                      className="px-4 py-2 text-xs text-slate-400 hover:text-white"
+                      className="px-4 py-2 text-xs text-slate-400 hover:text-white font-medium"
                     >Cancel</button>
                     <button 
                       type="submit"
-                      className="px-4 py-2 text-xs bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors font-bold"
+                      className="px-6 py-2 text-xs bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors font-bold uppercase tracking-widest"
                     >Add & Index</button>
                  </div>
               </form>
