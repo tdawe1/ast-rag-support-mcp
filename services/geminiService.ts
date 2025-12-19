@@ -13,13 +13,15 @@ export class GeminiService {
     try {
       const response = await this.ai.models.generateContent({
         model: "gemini-3-flash-preview",
-        contents: `Act as an expert software engineer. Expand the following natural language query into a format suitable for semantic code search.
-        Query: "${userQuery}"
+        contents: `Act as a specialized RAG engine optimizer. Convert the following user request into an optimized semantic search payload.
         
-        Provide:
-        1. A more technical version of the query.
-        2. A list of key variable/function names or technical keywords.
-        3. A hypothetical code snippet that might represent the answer.`,
+        Request: "${userQuery}"
+        
+        Requirements:
+        1. Expanded Query: A dense, technical description of the implementation logic.
+        2. Keywords: High-precision identifiers (variable names, common function names, specific libraries).
+        3. Intent: Determine if the user is looking for a 'definition', 'usage', 'configuration', or 'logic flow'.
+        4. Hypothetical Code: A 5-10 line snippet of the likely target code.`,
         config: {
           responseMimeType: "application/json",
           responseSchema: {
@@ -30,9 +32,10 @@ export class GeminiService {
                 type: Type.ARRAY,
                 items: { type: Type.STRING }
               },
+              intent: { type: Type.STRING },
               hypotheticalCode: { type: Type.STRING }
             },
-            required: ["expanded", "keywords", "hypotheticalCode"]
+            required: ["expanded", "keywords", "intent", "hypotheticalCode"]
           }
         }
       });
@@ -42,14 +45,16 @@ export class GeminiService {
         original: userQuery,
         expanded: data.expanded || userQuery,
         keywords: data.keywords || [],
+        intent: data.intent || "unknown",
         hypotheticalCode: data.hypotheticalCode || ""
       };
     } catch (error) {
-      console.error("Gemini Expansion Error:", error);
+      console.error("Gemini Phase 3 Expansion Error:", error);
       return {
         original: userQuery,
         expanded: userQuery,
         keywords: [],
+        intent: "general",
         hypotheticalCode: ""
       };
     }

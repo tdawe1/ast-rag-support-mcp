@@ -14,6 +14,7 @@ export enum NodeType {
 }
 
 export type AccessGroup = 'public' | 'internal' | 'restricted';
+export type MatchType = 'dense' | 'bm25' | 'hybrid';
 
 export interface CodeChunk {
   id: string;
@@ -25,6 +26,7 @@ export interface CodeChunk {
   repo_id: string;
   score?: number;
   access_group: AccessGroup;
+  match_type?: MatchType;
 }
 
 export interface Repository {
@@ -40,9 +42,10 @@ export interface Repository {
 export interface IndexingEvent {
   id: string;
   timestamp: string;
-  type: 'CREATE' | 'MODIFY' | 'DELETE' | 'INFO';
+  type: 'CREATE' | 'MODIFY' | 'DELETE' | 'INFO' | 'AST_PARSE';
   file: string;
   message: string;
+  details?: string;
 }
 
 export interface ExpandedQuery {
@@ -50,6 +53,7 @@ export interface ExpandedQuery {
   expanded: string;
   keywords: string[];
   hypotheticalCode: string;
+  intent?: string;
 }
 
 export type UserRole = 'Admin' | 'Developer' | 'Viewer';
