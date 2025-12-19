@@ -1,37 +1,67 @@
-Key Features
+# rag-support (MCP RAG Server)
 
-    AST-Aware Chunking: Uses tree-sitter to parse Python, TypeScript, Go, and Rust. It indexes code by functional units (nodes) rather than line counts, preserving logic and scope.
+rag-support is a local-first Model Context Protocol (MCP) server providing semantic retrieval over codebases. It implements AST-based parsing to maintain logic boundaries and utilizes a reactive filesystem watcher for real-time index synchronization.
 
-    Reactive "Watch-and-Index": A built-in filesystem watcher detects changes in real-time. The vector index is typically updated in < 2 seconds after a file save.
+## System Architecture
 
-    Gemini-Powered Query Expansion: Automatically transforms vague natural language queries (e.g., "how do we handle auth?") into technical search vectors and hypothetical code signatures using Gemini 3 Flash.
+- **Runtime**: Python 3.11+
+- **Transport Layer**: Supports stdio and SSE/HTTP interfaces.
+- **Vector Engine**: LanceDB (Parquet-based, embedded storage).
+- **Embedding Model**: `jina-embeddings-v2-base-code` (8192 token context window).
+- **Parsing Engine**: Tree-sitter for language-agnostic AST functional node generation.
 
-    Local-First Architecture: Powered by LanceDB, an embedded, serverless vector engine that stores data in high-performance Parquet files directly on your machine.
+## Functional Specifications
 
-    MCP Integration: Exposes retrieval capabilities via standard MCP Tools (search_codebase) and provides direct file access via a custom code:// URI scheme.
+### Ingestion & Indexing
+- **AST Chunking**: Source files are parsed into functional nodes (e.g., class definitions, function definitions) rather than fixed line-count chunks.
+- **Reactive Sync**: Filesystem watcher integration (e.g., `watchdog`) detects `CREATE`, `MODIFY`, or `DELETE` events and triggers incremental re-indexing.
+- **Deduplication**: Content hashing prevents redundant embedding of unchanged code blocks.
 
-    Admin Dashboard: A beautiful, React-based management interface for monitoring indexing health, exploring vector stats, and testing semantic search.
+### Retrieval Logic
+- **Query Expansion**: Utilizes Gemini 3 Flash to pre-process natural language queries into technical search vectors and hypothetical code signatures.
+- **Hybrid Retrieval**: Combines dense vector search with BM25 keyword matching for exact identifier resolution.
 
-🛠️Technical Stack
+## MCP Interface Specification
 
-    Runtime: Python 3.11+
+### Tools (CallTool)
+- `search_codebase`: Executes semantic search over indexed repositories.
+  - `query` (string): Search parameter.
+  - `n_results` (int): Return limit.
+  - `repo_id` (string, optional): Scope limit.
+- `reindex_target`: Triggers manual full re-indexing of a specific directory.
+  - `path` (string): Local directory path.
 
-    Vector Engine: LanceDB
+### Resources (ReadResource)
+- `code://{repo_id}/{relative_path}`: Provides direct read access to file contents.
+- **MIME Type**: `text/x-{language}`.
 
-    Embeddings: jina-embeddings-v2-base-code (8192 token context)
+## Data Schema
 
-    Parsing: Tree-sitter
+Vector metadata follows a strict schema for forward compatibility with RBAC:
 
-    AI: Google Gemini API (@google/genai)
+```json
+{
+  "id": "uuid",
+  "vector": "[float32]",
+  "payload": {
+    "content": "string",
+    "file_path": "string",
+    "start_line": "int",
+    "end_line": "int",
+    "node_type": "string",
+    "repo_id": "string",
+    "access_group": "string"
+  }
+}
+```
 
-    Frontend: React + Tailwind CSS + Recharts
+## Implementation Roadmap
 
-📋 Roadmap
+- **Milestone 1: Core Logic**: Implementation of Tree-sitter integration and LanceDB storage schema.
+- **Milestone 2: MCP Binding**: Implementation of stdio server and retrieval tools.
+- **Milestone 3: Synchronization**: Filesystem observer integration and query expansion optimization.
+- **Milestone 4: Security (Phase 2)**: Implementation of access_group filtering and token-based claims validation.
 
-Phase 1: Core logic, AST parsing, and local LanceDB storage.
+## Environment Requirements
 
-Phase 2: MCP Stdio interface and Gemini expansion.
-
-Phase 3: Hybrid Search (Dense Vector + BM25 Keyword matching).
-
-Phase 4: Networked SSE transport and Role-Based Access Control (RBAC).
+The application requires an active environment variable `process.env.API_KEY` for the Query Expansion module to interface with Google Generative AI models.

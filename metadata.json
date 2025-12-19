@@ -1,0 +1,5 @@
+{
+  "name": "rag-support: MCP RAG Admin Dashboard",
+  "description": "A high-performance management interface for the rag-support MCP server, featuring real-time indexing visualization, AST-based code exploration, and Gemini-powered semantic search query expansion.",
+  "requestFramePermissions": []
+}
