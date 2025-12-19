@@ -46,7 +46,7 @@ const RepositoryList: React.FC<RepositoryListProps> = ({ repos, onAdd, onDelete,
           onClick={() => setShowAddModal(true)}
           className="bg-blue-600 hover:bg-blue-500 text-white text-sm px-4 py-2 rounded-lg font-semibold transition-colors shadow-lg shadow-blue-500/10"
         >
-           + Add Local Target
+           Add Local Target
         </button>
       </header>
 
@@ -83,17 +83,15 @@ const RepositoryList: React.FC<RepositoryListProps> = ({ repos, onAdd, onDelete,
                  <button 
                   onClick={() => onReindex(repo.id)}
                   disabled={repo.status === 'indexing'}
-                  className="p-2 text-slate-400 hover:text-white bg-slate-800 rounded-lg hover:bg-slate-700 transition-all disabled:opacity-50"
-                  title="Force Reindex"
+                  className="px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-white bg-slate-800 rounded-lg hover:bg-slate-700 transition-all disabled:opacity-50"
                  >
-                    🔄
+                    Reindex
                  </button>
                  <button 
                   onClick={() => onDelete(repo.id)}
-                  className="p-2 text-slate-400 hover:text-red-400 bg-slate-800 rounded-lg hover:bg-red-500/10 transition-all"
-                  title="Remove Repository"
+                  className="px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-red-400 bg-slate-800 rounded-lg hover:bg-red-500/10 transition-all"
                  >
-                    🗑️
+                    Remove
                  </button>
               </div>
             </div>
@@ -137,7 +135,6 @@ const RepositoryList: React.FC<RepositoryListProps> = ({ repos, onAdd, onDelete,
 
             {repo.status === 'error' && (
               <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center text-xs text-red-400">
-                <span className="mr-2">⚠️</span>
                 <span>Indexer failed: Permission denied while accessing '{repo.path}/.git'</span>
               </div>
             )}

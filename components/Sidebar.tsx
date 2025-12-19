@@ -11,11 +11,13 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, userRole, setUserRole }) => {
   const items = [
-    { id: ViewType.DASHBOARD, label: 'Dashboard', icon: '📊' },
-    { id: ViewType.SEARCH, label: 'Semantic Search', icon: '🔍' },
-    { id: ViewType.REPOSITORIES, label: 'Repositories', icon: '📁' },
-    { id: ViewType.SECURITY, label: 'Security & Auth', icon: '🛡️' },
-    { id: ViewType.LOGS, label: 'System Logs', icon: '📜' },
+    { id: ViewType.DASHBOARD, label: 'Dashboard' },
+    { id: ViewType.SEARCH, label: 'Semantic Search' },
+    { id: ViewType.REPOSITORIES, label: 'Repositories' },
+    { id: ViewType.RESOURCES, label: 'Resources' },
+    { id: ViewType.PROMPTS, label: 'MCP Prompts' },
+    { id: ViewType.SECURITY, label: 'Security & Auth' },
+    { id: ViewType.LOGS, label: 'System Logs' },
   ];
 
   return (
@@ -26,7 +28,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, userRole, setUs
         </h1>
         <p className="text-xs text-slate-500 mt-1">MCP RAG Server Admin</p>
       </div>
-      <nav className="flex-1 py-4">
+      <nav className="flex-1 py-4 overflow-y-auto">
         {items.map((item) => (
           <button
             key={item.id}
@@ -37,7 +39,6 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setView, userRole, setUs
                 : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
             }`}
           >
-            <span className="mr-3 text-lg">{item.icon}</span>
             {item.label}
           </button>
         ))}

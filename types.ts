@@ -3,6 +3,8 @@ export enum ViewType {
   DASHBOARD = 'DASHBOARD',
   SEARCH = 'SEARCH',
   REPOSITORIES = 'REPOSITORIES',
+  RESOURCES = 'RESOURCES',
+  PROMPTS = 'PROMPTS',
   SECURITY = 'SECURITY',
   LOGS = 'LOGS'
 }
@@ -15,8 +17,30 @@ export enum NodeType {
 }
 
 export type AccessGroup = 'public' | 'internal' | 'restricted';
-export type MatchType = 'dense' | 'bm25' | 'hybrid';
+export type MatchType = 'dense' | 'bm25' | 'hybrid' | 'reranked';
 export type TransportType = 'STDIO' | 'SSE' | 'HTTP';
+
+export interface PromptArgument {
+  name: string;
+  description: string;
+  required: boolean;
+}
+
+export interface Prompt {
+  id: string;
+  name: string;
+  description: string;
+  template: string;
+  arguments: PromptArgument[];
+}
+
+export interface ResourceTemplate {
+  id: string;
+  uriTemplate: string;
+  name: string;
+  description: string;
+  mimeType: string;
+}
 
 export interface CodeChunk {
   id: string;
@@ -27,6 +51,7 @@ export interface CodeChunk {
   node_type: NodeType;
   repo_id: string;
   score?: number;
+  originalScore?: number;
   access_group: AccessGroup;
   match_type?: MatchType;
 }

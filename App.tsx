@@ -6,6 +6,8 @@ import SearchPanel from './components/SearchPanel';
 import RepositoryList from './components/RepositoryList';
 import IndexingLog from './components/IndexingLog';
 import SecurityPanel from './components/SecurityPanel';
+import PromptManager from './components/PromptManager';
+import ResourceBrowser from './components/ResourceBrowser';
 import { ViewType, Repository, UserRole } from './types';
 
 const App: React.FC = () => {
@@ -45,7 +47,6 @@ const App: React.FC = () => {
       r.id === id ? { ...r, status: 'indexing', progress: 0 } : r
     ));
     
-    // Simulate reindexing progress
     let currentProgress = 0;
     const interval = setInterval(() => {
       currentProgress += Math.floor(Math.random() * 15) + 5;
@@ -78,6 +79,10 @@ const App: React.FC = () => {
             onReindex={reindexRepository} 
           />
         );
+      case ViewType.RESOURCES:
+        return <ResourceBrowser />;
+      case ViewType.PROMPTS:
+        return <PromptManager />;
       case ViewType.SECURITY:
         return <SecurityPanel userRole={userRole} />;
       case ViewType.LOGS:
@@ -111,7 +116,6 @@ const App: React.FC = () => {
           {renderView()}
         </div>
 
-        {/* Global Action Bar */}
         <div className="fixed bottom-0 right-0 left-64 p-4 bg-slate-900/80 backdrop-blur-md border-t border-slate-800 flex justify-between items-center z-50">
            <div className="text-xs text-slate-500 flex items-center space-x-4">
               <span className="flex items-center"><span className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-2"></span>LanceDB V0.3.1</span>
@@ -129,7 +133,7 @@ const App: React.FC = () => {
                 onClick={() => setView(ViewType.SEARCH)}
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center shadow-lg shadow-blue-500/20"
               >
-                🔍 Search Code
+                Search Code
               </button>
            </div>
         </div>

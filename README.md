@@ -1,3 +1,4 @@
+
 # rag-support (MCP RAG Server)
 
 rag-support is a local-first Model Context Protocol (MCP) server providing semantic retrieval over codebases. It implements AST-based parsing to maintain logic boundaries and utilizes a reactive filesystem watcher for real-time index synchronization.
@@ -15,56 +16,18 @@ rag-support is a local-first Model Context Protocol (MCP) server providing seman
 ### Ingestion & Indexing
 - **AST Chunking**: Source files are parsed into functional nodes (e.g., class definitions, function definitions) rather than fixed line-count chunks.
 - **Reactive Sync**: Filesystem watcher integration (e.g., `watchdog`) detects `CREATE`, `MODIFY`, or `DELETE` events and triggers incremental re-indexing.
-- **Deduplication**: Content hashing prevents redundant embedding of unchanged code blocks.
 
 ### Retrieval Logic
-- **Query Expansion**: Utilizes Gemini 3 Flash to pre-process natural language queries into technical search vectors and hypothetical code signatures.
-- **Hybrid Retrieval**: Combines dense vector search with BM25 keyword matching for exact identifier resolution.
-
-### Security & RBAC (Phase 4)
-- **Claim Validation**: Validates JWT claims for scoped tool access (`search_codebase`, `read_resource`, `reindex`).
-- **Access Groups**: Metadata-level filtering ensures users can only retrieve code chunks within their permitted visibility (`public`, `internal`, `restricted`).
-
-## MCP Interface Specification
-
-### Tools (CallTool)
-- `search_codebase`: Executes semantic search over indexed repositories.
-  - `query` (string): Search parameter.
-  - `n_results` (int): Return limit.
-  - `repo_id` (string, optional): Scope limit.
-- `reindex_target`: Triggers manual full re-indexing of a specific directory.
-  - `path` (string): Local directory path.
-
-### Resources (ReadResource)
-- `code://{repo_id}/{relative_path}`: Provides direct read access to file contents.
-- **MIME Type**: `text/x-{language}`.
-
-## Data Schema
-
-Vector metadata follows a strict schema for forward compatibility with RBAC:
-
-```json
-{
-  "id": "uuid",
-  "vector": "[float32]",
-  "payload": {
-    "content": "string",
-    "file_path": "string",
-    "start_line": "int",
-    "end_line": "int",
-    "node_type": "string",
-    "repo_id": "string",
-    "access_group": "string"
-  }
-}
-```
+- **Hybrid Retrieval**: Combines dense vector search with BM25 keyword matching.
+- **Cross-Encoder Re-ranking**: High-precision semantic verification of initial top hits.
 
 ## Implementation Roadmap
 
-- [x] **Milestone 1: Core Logic**: Implementation of Tree-sitter integration and LanceDB storage schema.
-- [x] **Milestone 2: MCP Binding**: Implementation of stdio server and retrieval tools.
-- [x] **Milestone 3: Synchronization**: Filesystem observer integration and query expansion optimization.
-- [x] **Milestone 4: Security & Networked Transport**: Implementation of access_group filtering, SSE transport, and audit logging.
+- [x] **Milestone 1: Core Logic**: Tree-sitter integration and LanceDB storage.
+- [x] **Milestone 2: MCP Binding**: Stdio server and retrieval tools.
+- [x] **Milestone 3: Synchronization**: Filesystem observer and query expansion.
+- [x] **Milestone 4: Security & Networked Transport**: Access_group filtering, SSE transport, and audit logging.
+- [x] **Milestone 5: Intelligence & Templates**: MCP Prompts, Resource Templates, Cross-Encoder Re-ranking, and RAGAS telemetry.
 
 ## Environment Requirements
 
