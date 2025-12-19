@@ -1,34 +1,47 @@
+# rag-support: MCP RAG Admin Dashboard
 
-# rag-support (MCP RAG Server)
+`rag-support` is a high-performance administrative command center for a local-first Model Context Protocol (MCP) server. It provides deep visibility into semantic retrieval operations, codebase indexing, and real-time synchronization events.
 
-rag-support is a local-first Model Context Protocol (MCP) server providing semantic retrieval over codebases. It implements AST-based parsing to maintain logic boundaries and utilizes a reactive filesystem watcher for real-time index synchronization.
+## 🚀 Dashboard Features
 
-## System Architecture
+### 1. Semantic Intelligence
+- **Gemini-Powered Query Expansion**: Automatically transforms simple user queries into dense technical search payloads using `gemini-3-flash-preview`.
+- **Cross-Encoder Re-ranking**: Visualizes high-precision semantic verification of initial vector hits, including score boost metrics.
+- **Hybrid Search**: Combines Dense Vector retrieval (LanceDB) with BM25 keyword matching.
 
-- **Runtime**: Python 3.11+
-- **Transport Layer**: Supports stdio and SSE/HTTP interfaces (Phase 4).
-- **Vector Engine**: LanceDB (Parquet-based, embedded storage).
-- **Embedding Model**: `jina-embeddings-v2-base-code` (8192 token context window).
-- **Parsing Engine**: Tree-sitter for language-agnostic AST functional node generation.
+### 2. MCP Lifecycle Management
+- **Prompt Manager**: Define and test reusable instruction templates with variable injection (e.g., `{code_content}`, `{file_path}`).
+- **Resource Templates**: Manage dynamic URI patterns (e.g., `code://`, `ast://`) and read-only data extraction hooks.
+- **Transport Control**: Real-time monitor for SSE (Server-Sent Events) streams, allowing for live debugging of JSON-RPC 2.0 messages.
 
-## Functional Specifications
+### 3. Codebase Observability
+- **AST Chunking Visualization**: Monitor functional node extraction via Tree-Sitter (classes, functions, methods).
+- **Reactive Sync Logs**: A live-scrolling view of filesystem observer events (`CREATE`, `MODIFY`, `DELETE`).
+- **RAGAS Telemetry**: Advanced evaluation metrics including Faithfulness, Context Precision, and Answer Relevancy.
 
-### Ingestion & Indexing
-- **AST Chunking**: Source files are parsed into functional nodes (e.g., class definitions, function definitions) rather than fixed line-count chunks.
-- **Reactive Sync**: Filesystem watcher integration (e.g., `watchdog`) detects `CREATE`, `MODIFY`, or `DELETE` events and triggers incremental re-indexing.
+### 4. Enterprise Security
+- **RBAC Simulator**: Toggle between Admin, Developer, and Viewer roles to verify access control policies.
+- **Claims Inspector**: Real-time JWT decoding and scope validation for secure MCP interactions.
+- **Security Audit Trail**: Comprehensive logging of principal actions against protected resources.
 
-### Retrieval Logic
-- **Hybrid Retrieval**: Combines dense vector search with BM25 keyword matching.
-- **Cross-Encoder Re-ranking**: High-precision semantic verification of initial top hits.
+## 🛠 Technical Architecture
 
-## Implementation Roadmap
+- **Frontend**: React 19, Tailwind CSS
+- **Visualization**: Recharts for performance telemetry
+- **Backend (Server Spec)**:
+  - **Runtime**: Python 3.11+
+  - **Vector Engine**: LanceDB (Parquet-based)
+  - **Embedding Model**: `jina-embeddings-v2-base-code`
+  - **Parsing**: Tree-sitter AST engine
 
-- [x] **Milestone 1: Core Logic**: Tree-sitter integration and LanceDB storage.
-- [x] **Milestone 2: MCP Binding**: Stdio server and retrieval tools.
-- [x] **Milestone 3: Synchronization**: Filesystem observer and query expansion.
-- [x] **Milestone 4: Security & Networked Transport**: Access_group filtering, SSE transport, and audit logging.
-- [x] **Milestone 5: Intelligence & Templates**: MCP Prompts, Resource Templates, Cross-Encoder Re-ranking, and RAGAS telemetry.
+## 🗺 Implementation Roadmap
 
-## Environment Requirements
+- [x] **Milestone 1: Core Logic**: Tree-sitter integration and LanceDB storage schema.
+- [x] **Milestone 2: MCP Binding**: Stdio server implementation and retrieval tool suite.
+- [x] **Milestone 3: Synchronization**: Filesystem observer integration and query expansion optimization.
+- [x] **Milestone 4: Security (Phase 2)**: Access_group filtering and token-based claims validation.
+- [x] **Milestone 5: Advanced Intelligence**: MCP Prompts, Resource Templates, and RAGAS telemetry.
 
-The application requires an active environment variable `process.env.API_KEY` for the Query Expansion module to interface with Google Generative AI models.
+## 🔑 Environment Requirements
+
+The dashboard requires `process.env.API_KEY` to be configured for the Query Expansion service. This key enables the integrated Gemini models to perform semantic analysis and hypothetical code generation.
