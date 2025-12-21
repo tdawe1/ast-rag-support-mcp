@@ -2,7 +2,7 @@
 
 `rag-support` is a high-performance administrative command center for a local-first Model Context Protocol (MCP) server. It provides deep visibility into semantic retrieval operations, codebase indexing, and real-time synchronization events.
 
-## 🚀 Dashboard Features
+## Dashboard Features
 
 ### 1. Semantic Intelligence
 - **Gemini-Powered Query Expansion**: Automatically transforms simple user queries into dense technical search payloads using `gemini-3-flash-preview`.

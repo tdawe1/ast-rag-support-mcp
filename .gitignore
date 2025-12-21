@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+data/lancedb/code_chunks.lance/_transactions/0-d0a12b07-81ea-458c-b504-b71caf46a8d8.txn
+data/lancedb/code_chunks.lance/_transactions/1-e6f8e12a-e118-47b3-9ef9-c2003213e88c.txn
+data/lancedb/code_chunks.lance/_transactions/3-75738e5e-4774-4f98-bd3c-53eedaca496b.txn
+data/lancedb/code_chunks.lance/_transactions/4-28433c35-52e4-4281-a3f2-b1499ad5a86c.txn
+data/lancedb/code_chunks.lance/_transactions/2-50deb2dd-c3af-4ccf-aebe-c3bbc25d3cd6.txn
+data/lancedb/code_chunks.lance/_transactions/5-bd6d2589-d183-443d-9ca1-fde0c88d31e5.txn
+data/lancedb/code_chunks.lance/_transactions/6-93d86072-0b04-4d9f-8fd9-2a209769faad.txn
+data/lancedb/code_chunks.lance/_transactions/7-46cb2a8d-5ffb-4715-bb1c-06c935307a73.txn

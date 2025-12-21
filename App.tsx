@@ -14,37 +14,129 @@ import { intelligenceService } from './services/intelligenceService';
 
 const App: React.FC = () => {
   const [currentView, setView] = useState<ViewType>(ViewType.DASHBOARD);
-  const [userRole, setUserRole] = useState<UserRole>('Admin');
-  const [modelConfig, setModelConfig] = useState<ModelConfig>({
-    provider: 'GEMINI',
-    localEndpoint: 'http://localhost:11434/v1',
-    localModel: 'llama3'
+  
+  const [userRole, setUserRole] = useState<UserRole>(() => {
+    const saved = localStorage.getItem('rag_user_role');
+    return (saved as UserRole) || 'Admin';
   });
 
+  const [modelConfig, setModelConfig] = useState<ModelConfig>(() => {
+    const saved = localStorage.getItem('rag_model_config');
+    return saved ? JSON.parse(saved) : {
+      provider: 'GEMINI',
+      localEndpoint: 'http://localhost:11434/v1',
+      localModel: 'llama3'
+    };
+  });
+
+  const [repositories, setRepositories] = useState<Repository[]>([]);
+
+  // Load repositories with migration strategy
   useEffect(() => {
+    const fetchRepos = async () => {
+      let loadedRepos: Repository[] = [];
+      let source = 'none';
+
+      try {
+        const response = await fetch('http://localhost:3001/api/repositories');
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.length > 0) {
+            loadedRepos = data;
+            source = 'backend';
+          }
+        }
+      } catch (error) {
+        console.warn("Backend API not reachable, falling back to local storage.");
+      }
+
+      // If backend was empty or failed, try localStorage (Migration Step)
+      if (loadedRepos.length === 0) {
+        const localSaved = localStorage.getItem('rag_repositories');
+        if (localSaved) {
+          try {
+            loadedRepos = JSON.parse(localSaved);
+            source = 'local_storage';
+            console.log("Recovered repositories from localStorage.");
+          } catch (e) {
+            console.error("Failed to parse localStorage repositories");
+          }
+        }
+      }
+
+      // If still empty, use defaults
+      if (loadedRepos.length === 0) {
+         loadedRepos = [
+          {
+            id: 'main-app',
+            name: 'Main Monorepo',
+            path: '/Users/dev/projects/main-monorepo',
+            lastIndexed: '2 mins ago',
+            fileCount: 842,
+            chunkCount: 32410,
+            status: 'active'
+          },
+          {
+            id: 'auth-microservice',
+            name: 'Auth Service',
+            path: '/Users/dev/projects/auth-service',
+            lastIndexed: '12 mins ago',
+            fileCount: 156,
+            chunkCount: 5200,
+            status: 'active'
+          }
+        ];
+        source = 'defaults';
+      }
+
+      setRepositories(loadedRepos);
+
+      // If we recovered from localStorage, try to sync to backend immediately (Migration)
+      if (source === 'local_storage') {
+        try {
+          await fetch('http://localhost:3001/api/repositories', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(loadedRepos)
+          });
+          console.log("Migrated local repositories to backend.");
+        } catch (e) {
+          console.warn("Could not migrate to backend (server might be down).");
+        }
+      }
+    };
+
+    fetchRepos();
+  }, []);
+
+  // Persistence Effects
+  useEffect(() => {
+    localStorage.setItem('rag_user_role', userRole);
+  }, [userRole]);
+
+  useEffect(() => {
+    localStorage.setItem('rag_model_config', JSON.stringify(modelConfig));
     intelligenceService.updateConfig(modelConfig);
   }, [modelConfig]);
 
-  const [repositories, setRepositories] = useState<Repository[]>([
-    {
-      id: 'main-app',
-      name: 'Main Monorepo',
-      path: '/Users/dev/projects/main-monorepo',
-      lastIndexed: '2 mins ago',
-      fileCount: 842,
-      chunkCount: 32410,
-      status: 'active'
-    },
-    {
-      id: 'auth-microservice',
-      name: 'Auth Service',
-      path: '/Users/dev/projects/auth-service',
-      lastIndexed: '12 mins ago',
-      fileCount: 156,
-      chunkCount: 5200,
-      status: 'active'
+  useEffect(() => {
+    // Save to Backend API instead of localStorage
+    const saveToBackend = async () => {
+      try {
+        await fetch('http://localhost:3001/api/repositories', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(repositories)
+        });
+      } catch (error) {
+        console.error("Failed to sync repositories to server:", error);
+      }
+    };
+    
+    if (repositories.length > 0) {
+      saveToBackend();
     }
-  ]);
+  }, [repositories]);
 
   const addRepository = (newRepo: Repository) => {
     setRepositories([...repositories, newRepo]);
@@ -65,9 +157,21 @@ const App: React.FC = () => {
       if (currentProgress >= 100) {
         currentProgress = 100;
         clearInterval(interval);
-        setRepositories(prev => prev.map(r => 
-          r.id === id ? { ...r, status: 'active', lastIndexed: 'Just now', progress: undefined } : r
-        ));
+        setRepositories(prev => prev.map(r => {
+          if (r.id === id) {
+             const newFileCount = Math.floor(Math.random() * 450) + 50;
+             const newChunkCount = newFileCount * (Math.floor(Math.random() * 45) + 5);
+             return { 
+               ...r, 
+               status: 'active', 
+               lastIndexed: 'Just now', 
+               progress: undefined,
+               fileCount: newFileCount,
+               chunkCount: newChunkCount
+             };
+          }
+          return r;
+        }));
       } else {
         setRepositories(prev => prev.map(r => 
           r.id === id ? { ...r, progress: currentProgress } : r

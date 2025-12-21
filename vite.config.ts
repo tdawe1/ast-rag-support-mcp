@@ -12,7 +12,12 @@ export default defineConfig(({ mode }) => {
       plugins: [react()],
       define: {
         'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
+        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+        'process.env.LOCAL_API_BASE': JSON.stringify(env.LOCAL_API_BASE),
+        'process.env.LOCAL_MODEL': JSON.stringify(env.LOCAL_MODEL),
+        'process.env.LOCAL_CHAT_MODEL': JSON.stringify(env.LOCAL_CHAT_MODEL),
+        'process.env.LOCAL_EMBED_MODEL': JSON.stringify(env.LOCAL_EMBED_MODEL),
+        'process.env.FORCE_LOCAL_RAG': JSON.stringify(env.FORCE_LOCAL_RAG)
       },
       resolve: {
         alias: {
